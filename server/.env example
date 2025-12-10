@@ -1,0 +1,31 @@
+# Ollama Server
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_API_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.1
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+PORT=8001
+# YouTube Data API Key
+YOUTUBE_API_KEY=Your Youtube API Key
+# Maximum tokens for Ollama response
+MAX_TOKENS=1000
+# Temperature setting for Ollama
+TEMPERATURE=0.7
+# Top P setting for Ollama
+TOP_P=0.9
+# Frequency penalty for Ollama
+FREQUENCY_PENALTY=0.0
+# Presence penalty for Ollama
+PRESENCE_PENALTY=0.0
+# Number of sources to return
+NUM_SOURCES=3
+# Chunk size for video transcription (in characters)
+CHUNK_SIZE=1000
+# Overlap size for video transcription chunks (in characters)
+OVERLAP_SIZE=200
+# CORS Allowed Origins (comma-separated)
+CORS_ALLOWED_ORIGINS=http://localhost:3001,http://localhost:8080,http://10.10.158.58:3001
+# Enable detailed logging (true/false)
+ENABLE_DETAILED_LOGGING=true
+
+
+# lsof -ti:8001 | xargs kill -9 2>/dev/null || true && sleep 2 && echo "✓ Killed existing process"

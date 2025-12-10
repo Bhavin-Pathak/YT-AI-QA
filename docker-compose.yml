@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: yt-qa-backend
+    ports:
+      - "8001:8001"
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=llama3
+      - OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+    volumes:
+      - ./server:/app
+      # Exclude venv from volume mount to avoid conflicts with container python
+      - /app/venv
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: yt-qa-frontend
+    ports:
+      - "3000:80"
+    restart: always
+    depends_on:
+      - backend
+
+# Note: I was not able to run ollama in docker container so I assume Ollama is running on the host machine.
+# host.docker.internal allows the container to access the host's localhost.
