@@ -81,7 +81,7 @@ export const questionAPI = {
    * GET /questions/history/{video_id}
    */
   getHistory: async (videoId) => {
-    const response = await fetch(`${API_BASE_URL}/questions/history/${videoId}`);
+    const response = await fetch(`${API_BASE_URL}/questions/conversation/${videoId}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch history: ${response.statusText}`);
     }
