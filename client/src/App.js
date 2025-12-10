@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import GlassCard from './components/GlassCard';
 import Button from './components/Button';
 import Input from './components/Input';
@@ -7,7 +7,8 @@ import VideoCard from './components/VideoCard';
 import SourceCard from './components/SourceCard';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import {Video,FileText,MessageSquare,Lightbulb,BookOpen,Loader2,Sparkles} from 'lucide-react';
+import { Video, FileText, MessageSquare, Lightbulb, BookOpen, Loader2, Sparkles } from 'lucide-react';
+import { videoAPI, questionAPI, summaryAPI } from './services/APIService';
 
 function App() {
   // State variables
@@ -15,6 +16,21 @@ function App() {
   const [question, setQuestion] = useState('');
   const [processedVideos, setProcessedVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
+
+  // Fetch videos on load
+  useEffect(() => {
+    videoAPI.getProcessedVideos().then(data => {
+      const formatted = data.videos.map(v => ({
+        id: v.video_id,
+        title: v.info.title,
+        duration: v.info.transcript_length ? `~${Math.ceil(v.info.transcript_length / 1000)}m words` : 'Unknown',
+        channel: v.info.channel || 'Unknown Channel',
+        publishDate: v.info.publish_date || 'Unknown Date',
+        processedAt: 'Recently'
+      }));
+      setProcessedVideos(formatted);
+    }).catch(err => console.error('Failed to fetch videos', err));
+  }, []);
   const [answer, setAnswer] = useState('');
   const [sources, setSources] = useState([]);
   const [summary, setSummary] = useState('');
@@ -22,7 +38,7 @@ function App() {
   const [status, setStatus] = useState({ process: '', question: '' });
 
   // Functions to handle video processing
-  const processVideo = () => {
+  const processVideo = async () => {
     if (!videoUrl.trim()) {
       setStatus({ ...status, process: '⚠️ Please enter a valid YouTube URL' });
       return;
@@ -31,14 +47,16 @@ function App() {
     setLoading(true);
     setStatus({ ...status, process: '🔄 Processing video...' });
 
-    setTimeout(() => {
-      const videoId = videoUrl.split('v=')[1]?.split('&')[0] || `demo-${Date.now()}`;
+    try {
+      const result = await videoAPI.processVideo(videoUrl);
 
       const newVideo = {
-        id: videoId,
+        id: result.video_id || `video-${Date.now()}`,
         url: videoUrl,
-        title: 'Understanding AI and Machine Learning',
-        duration: '15:30',
+        title: result.title || 'Processed Video',
+        duration: result.transcript_length ? `~${Math.ceil(result.transcript_length / 1000)}m words` : 'Unknown', // Approximate
+        channel: result.channel || 'Unknown Channel',
+        publishDate: result.publish_date || 'Unknown Date',
         processedAt: new Date().toLocaleDateString(),
       };
 
@@ -46,46 +64,95 @@ function App() {
       setSelectedVideo(newVideo);
       setVideoUrl('');
       setStatus({ ...status, process: '✅ Video processed successfully!' });
+    } catch (error) {
+      setStatus({ ...status, process: `❌ Error: ${error.message}` });
+      console.error('Video processing error:', error);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
-  const askQuestion = () => {
+  const askQuestion = async () => {
     if (!question.trim()) {
       setStatus({ ...status, question: '⚠️ Please enter a question' });
+      return;
+    }
+
+    if (!selectedVideo) {
+      setStatus({ ...status, question: '⚠️ Please select a video first' });
       return;
     }
 
     setLoading(true);
     setStatus({ ...status, question: '🤔 Generating answer...' });
 
-    setTimeout(() => {
-      setAnswer(
-        'Based on the video content, artificial intelligence and machine learning are transforming technology...'
-      );
+    try {
+      const result = await questionAPI.askQuestion(selectedVideo.id, question);
 
-      setSources([
-        { timestamp: '02:15', text: 'AI fundamentals explained.' },
-        { timestamp: '05:42', text: 'Machine learning neural network breakdown.' },
-        { timestamp: '08:30', text: 'Real-world applications like recommendations.' },
-        { timestamp: '12:10', text: 'Ethical concerns & future impact.' },
-      ]);
+      setAnswer(result.answer || 'No answer generated');
 
+      // Format sources from the API response
+      const formattedSources = result.sources?.map((source) => {
+        let label = 'Reference';
+        if (source.timestamp) {
+          label = `Time: ${source.timestamp}`;
+        } else if (source.type === 'web') {
+          label = 'Web Source';
+        } else if (source.type === 'metadata') {
+          label = `Metadata: ${source.source}`;
+        } else if (source.source === 'youtube_transcript') {
+          label = 'Video Transcript';
+        } else if (source.source) {
+          label = source.source;
+        }
+
+        return {
+          timestamp: label,
+          text: source.text || '',
+        };
+      }) || [];
+
+      setSources(formattedSources);
       setStatus({ ...status, question: '✅ Answer generated successfully!' });
       setQuestion('');
+    } catch (error) {
+      setStatus({ ...status, question: `❌ Error: ${error.message}` });
+      console.error('Question answering error:', error);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
-  const generateSummary = () => {
+  const generateSummary = async () => {
+    if (!selectedVideo) {
+      setStatus({ ...status, process: '⚠️ Please select a video first' });
+      return;
+    }
+
     setLoading(true);
 
-    setTimeout(() => {
-      setSummary(
-        `**Introduction to AI & Machine Learning**\n\n00:00 - Overview\n02:30 - What is AI?\n05:15 - ML fundamentals\n08:45 - Real-world applications\n13:00 - Ethics & future`
-      );
+    try {
+      const result = await summaryAPI.generateSummary(selectedVideo.id);
+
+      let formattedSummary = result.overall_summary || 'No summary generated';
+
+      if (result.highlights && result.highlights.length > 0) {
+        formattedSummary += '\n\nKey Highlights:\n';
+        result.highlights.forEach(h => {
+          formattedSummary += `\n• [${h.timestamp}] ${h.main_point}`;
+          if (h.sub_points) {
+            h.sub_points.forEach(sp => formattedSummary += `\n  - ${sp}`);
+          }
+        });
+      }
+
+      setSummary(formattedSummary);
+    } catch (error) {
+      setStatus({ ...status, process: `❌ Error: ${error.message}` });
+      console.error('Summary generation error:', error);
+    } finally {
       setLoading(false);
-    }, 1800);
+    }
   };
 
   return (
@@ -124,14 +191,16 @@ function App() {
             )}
           </GlassCard>
 
-          <GlassCard>
+          {/* Library Section */}
+          <GlassCard className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
               <h2 className="text-xl font-bold text-white">Library</h2>
             </div>
-            <div className="space-y-3 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
               {processedVideos.length === 0 ? (
                 <div className="text-center py-8">
                   <FileText className="w-12 h-12 text-blue-300/30 mx-auto mb-3" />
@@ -144,6 +213,18 @@ function App() {
                     video={video}
                     isSelected={selectedVideo?.id === video.id}
                     onClick={() => setSelectedVideo(video)}
+                    onDelete={async (e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Delete this video?')) {
+                        try {
+                          await videoAPI.deleteVideo(video.id);
+                          setProcessedVideos(prev => prev.filter(v => v.id !== video.id));
+                          if (selectedVideo?.id === video.id) setSelectedVideo(null);
+                        } catch (err) {
+                          console.error('Delete error', err);
+                        }
+                      }
+                    }}
                   />
                 ))
               )}
