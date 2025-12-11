@@ -13,6 +13,10 @@ class ConversationMessage(BaseModel):
 
 
 class QuestionRequest(BaseModel):
+    """
+    Schema for question asking request.
+    Includes the question and optional context like video ID and history.
+    """
     question: str
     video_id: Optional[str] = None
     conversation_history: Optional[List[ConversationMessage]] = []
