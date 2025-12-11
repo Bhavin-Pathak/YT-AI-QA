@@ -35,7 +35,19 @@ def group_transcript_by_time(transcript_data: List[Dict], interval_seconds: int 
 
 
 def generate_summary(video_id: str) -> Dict:
-    """Generate comprehensive timestamped summary for a video"""
+    """
+    Generate comprehensive timestamped summary for a video.
+    
+    1. Generates an overall abstractive summary
+    2. Groups transcript into time-based segments
+    3. Generates bullet-point highlights for key segments
+    
+    Args:
+        video_id: ID of the video to summarize
+        
+    Returns:
+        Dict: Structured summary object
+    """
     if video_id not in video_transcripts:
         raise ValueError("Video not found. Please process the video first.")
     

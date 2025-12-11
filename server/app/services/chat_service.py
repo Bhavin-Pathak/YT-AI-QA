@@ -14,7 +14,20 @@ from app.utils.rag_utils import (
 def create_rag_pipeline(video_id: str, question_type: str = "video_content", 
                        use_compression: bool = True, 
                        conversation_history: List[ConversationMessage] = None):
-    """Create RAG pipeline for a video"""
+    """
+    Create RAG pipeline for a video.
+    
+    Configures the retriever, LLM, and prompt based on the question type.
+    
+    Args:
+        video_id: ID of the processed video
+        question_type: Classification of question (video_content, external_knowledge)
+        use_compression: Whether to compress context using LLM
+        conversation_history: Recent chat history for context
+        
+    Returns:
+        Tuple: (Chain, Retriever)
+    """
     if video_id not in vector_stores:
         raise ValueError("Video not processed yet")
     
@@ -123,7 +136,24 @@ Answer (clear, structured, and honest):"""
 
 def answer_question(question: str, video_id: str = None, 
                     conversation_history: List[ConversationMessage] = None) -> Dict[str, Any]:
-    """Answer a question about a video"""
+    """
+    Answer a question about a video using RAG.
+    
+    Orchestrates the entire question answering flow:
+    1. Validates video existence
+    2. Classifies question type
+    3. Retrieves relevant context
+    4. Compresses context if needed
+    5. Generates answer using LLM
+    
+    Args:
+        question: User's question
+        video_id: Target video ID
+        conversation_history: Previous messages in the session
+        
+    Returns:
+        Dict: The answer and supporting metadata
+    """
     # Get most recent video if not specified
     if not video_id:
         if not vector_stores:

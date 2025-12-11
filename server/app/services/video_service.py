@@ -58,7 +58,21 @@ def create_metadata_documents(metadata: Dict[str, Any], video_id: str):
     return docs
 
 def process_video(video_url: str) -> Dict[str, Any]:
-    """Process a YouTube video and create vector store"""
+    """
+    Process a YouTube video and create vector store.
+    
+    1. Extracts video ID
+    2. Fetches metadata
+    3. Fetches transcript
+    4. Chunks transcript
+    5. Creates embeddings and vector store
+    
+    Args:
+        video_url: URL of the YouTube video
+        
+    Returns:
+        Dict: Processing results and status
+    """
     # Extract video ID
     video_id = extract_video_id(video_url)
     
