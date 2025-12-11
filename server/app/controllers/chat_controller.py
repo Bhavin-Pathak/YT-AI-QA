@@ -10,7 +10,15 @@ router = APIRouter(prefix="/questions", tags=["questions"])
 
 @router.post("/ask", response_model=AnswerResponse)
 async def ask_question_endpoint(request: QuestionRequest):
-    """Ask a question about a processed video"""
+    """
+    Ask a question about a processed video using RAG.
+    
+    Args:
+        request: QuestionRequest containing the question and video ID.
+        
+    Returns:
+        AnswerResponse: The answer, sources, and context used.
+    """
     try:
         result = answer_question(
             question=request.question,

@@ -4,12 +4,21 @@ from app.models.models import VideoRequest, VideoResponse
 from app.services.video_service import process_video
 from app.core.storage import vector_stores, video_info
 
+# Router configuration
 router = APIRouter(prefix="/videos", tags=["videos"])
 
 
 @router.post("/process", response_model=VideoResponse)
 async def process_video_endpoint(request: VideoRequest):
-    """Process a YouTube video and create vector store"""
+    """
+    Process a YouTube video and create vector store.
+    
+    Args:
+        request: VideoRequest object containing the YouTube URL.
+        
+    Returns:
+        VideoResponse: Details of the processed video including processing stats.
+    """
     try:
         result = process_video(request.video_url)
         return VideoResponse(**result)
@@ -21,7 +30,12 @@ async def process_video_endpoint(request: VideoRequest):
 
 @router.get("/list")
 async def get_processed_videos():
-    """Get list of processed videos"""
+    """
+    Get list of all currently processed videos in memory.
+    
+    Returns:
+        dict: List of video objects.
+    """
     return {
         "videos": [
             {
