@@ -10,15 +10,16 @@ app = FastAPI(
 )
 
 # Add CORS middleware
+# Add CORS middleware to allow cross-origin requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend domain
+    allow_origins=["*"],  # In production, specify your frontend domain for security
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
+# Include routers for different functional areas
 app.include_router(video_controller.router)
 app.include_router(chat_controller.router)
 app.include_router(summary_controller.router)
