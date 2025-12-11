@@ -2,7 +2,8 @@
 
 A powerful full-stack application that uses AI (via Ollama) to analyze YouTube videos. It can generate summaries, answer questions based on video content, and provide timestamped highlights.
 
-![Project Preview](https://via.placeholder.com/800x400?text=YT-AI-QA+Preview)
+![Main Dashboard](preview/main.png)
+![Summary View](preview/summery.png)
 
 ## 🚀 Features
 
