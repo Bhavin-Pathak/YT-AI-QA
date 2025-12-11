@@ -7,7 +7,16 @@ from app.core.config import WEB_SEARCH_RESULTS, MAX_WEBPAGE_CONTENT
 
 
 def search_web(query: str, num_results: int = WEB_SEARCH_RESULTS) -> List[Dict[str, str]]:
-    """Search the web using DuckDuckGo and return results"""
+    """
+    Perform a web search using DuckDuckGo.
+    
+    Args:
+        query: Search query string.
+        num_results: Max number of results to return.
+    
+    Returns:
+        List[Dict]: List of search results with title, body, and URL.
+    """
     try:
         ddgs = DDGS()
         results = []

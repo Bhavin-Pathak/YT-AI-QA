@@ -12,7 +12,19 @@ from app.utils.web_utils import search_web, fetch_webpage_content
 
 
 def classify_question(question: str) -> str:
-    """Classify if question is about video content or requires external knowledge"""
+    """
+    Classify a question to determine the retrieval strategy.
+    
+    Categories:
+    - video_content: Questions about the video content itself (default).
+    - external_knowledge: Questions requiring fact-checking or broader context.
+    
+    Args:
+        question: The user query string.
+        
+    Returns:
+        str: Classification label ('video_content' or 'external_knowledge').
+    """
     # Video-specific indicators
     video_indicators = [
         "in this video", "in the video", "speaker says", "speaker mentions",

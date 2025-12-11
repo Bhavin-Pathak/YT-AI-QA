@@ -21,7 +21,18 @@ def extract_video_id(url: str) -> str:
 
 
 def fetch_youtube_metadata(video_id: str) -> Dict[str, Any]:
-    """Fetch YouTube video metadata using YouTube Data API or scraping"""
+    """
+    Fetch metadata for a YouTube video.
+    
+    Tries to use the YouTube Data API first if an API key is configured.
+    Falls back to HTML scraping if API fails or is not configured.
+    
+    Args:
+        video_id: The 11-character YouTube video ID.
+        
+    Returns:
+        Dict: Metadata including title, description, channel, views, etc.
+    """
     metadata = {
         "title": "Unknown Title",
         "description": "",
